@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCPD Secure Emergency & Medical Portal (GDPR Compliant)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bcpdNavy: '#1b2a4a',
+                        bcpdLightNavy: '#2c406d',
+                        bcpdGold: '#c5a059',
+                        bcpdGoldHover: '#b38f48',
+                        bcpdRed: '#991b1b',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .crest-bg { background-color: #1b2a4a; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- ================= GDPR LOGIN SCREEN ================= -->
+    <div id="loginScreen" class="fixed inset-0 bg-bcpdNavy z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl space-y-6 text-center border-t-4 border-bcpdGold">
+            <div class="flex flex-col items-center space-y-3">
+                <img src="https://lh3.googleusercontent.com/d/1B1s4B1L7k8n05uS5uH8X9h9lR0t1s2v5" alt="BCPD Crest" class="w-20 h-20 rounded-full border-2 border-bcpdGold object-cover shadow-md">
+                <h1 class="text-xl font-bold text-bcpdNavy">Bomber County Pipes & Drums</h1>
+                <p class="text-xs text-gray-500 font-medium">Secure Medical & Next of Kin Directory<br><span class="text-bcpdRed font-bold">GDPR Article 9 Compliant &bull; Password Protected & Authorised Access Only</span></p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-left text-xs text-amber-900 space-y-1">
+                <p class="font-bold flex items-center gap-1"><i class="fa-solid fa-shield-halved text-amber-700"></i> Strict Data Protection Notice:</p>
+                <p>This system contains confidential health data (GDPR Special Category). Access requires both profile selection and the secure band passcode.</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Select User Profile</label>
+                    <select id="loginUserSelect" required class="w-full border px-3 py-2.5 rounded-lg text-sm bg-white focus:ring-2 focus:ring-bcpdNavy">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Band Security Password / PIN</label>
+                    <input type="password" id="loginPin" required placeholder="Enter Band Password (default: BCPD2026!)" class="w-full border px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-bcpdNavy">
+                    <p class="text-[10px] text-gray-400 mt-1">Default security password for testing: <strong class="text-gray-600">BCPD2026!</strong></p>
+                </div>
+
+                <button type="submit" class="w-full bg-bcpdNavy hover:bg-bcpdLightNavy text-white font-bold py-3 rounded-lg text-sm transition shadow flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock-open text-bcpdGold"></i> Unlock Secure Portal
+                </button>
+            </form>
+
+            <div class="text-[10px] text-gray-400 pt-2 border-t">
+                &copy; 2026 Bomber County Pipes & Drums &bull; Baston, Lincolnshire
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= MAIN APP INTERFACE ================= -->
+
+    <!-- Top Banner / Header -->
+    <header class="crest-bg text-white shadow-md border-b-4 border-bcpdGold sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo and Title -->
+            <div class="flex items-center space-x-3">
+                <img src="https://lh3.googleusercontent.com/d/1B1s4B1L7k8n05uS5uH8X9h9lR0t1s2v5" alt="BCPD Crest" class="w-12 h-12 rounded-full border-2 border-bcpdGold object-cover shadow">
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-wide flex items-center gap-2">
+                        Bomber County Pipes & Drums
+                        <span class="bg-bcpdGold text-bcpdNavy text-xs px-2 py-0.5 rounded font-semibold uppercase tracking-wider">GDPR Secure</span>
+                    </h1>
+                    <p class="text-xs text-gray-300">Emergency Medical & Next of Kin Directory</p>
+                </div>
+            </div>
+
+            <!-- Header Actions & User Switcher -->
+            <div class="flex items-center gap-3">
+                <!-- Download HTML App Button -->
+                <button onclick="downloadAppCode()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-gray-500 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-download text-bcpdGold"></i> Download App (.html)
+                </button>
+
+                <!-- Current User Badge & Logout -->
+                <div class="flex items-center gap-3 bg-bcpdLightNavy px-3 py-1.5 rounded-lg border border-gray-600 text-sm">
+                    <div class="flex items-center gap-2">
+                        <div id="currentUserAvatar" class="w-8 h-8 rounded-full bg-bcpdGold text-bcpdNavy font-bold flex items-center justify-center text-xs">GS</div>
+                        <div class="text-left">
+                            <p id="currentUserName" class="font-semibold leading-tight text-white">Gary Sansby</p>
+                            <p id="currentUserRoleBadge" class="text-[10px] text-bcpdGold font-medium uppercase">Administrator</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="ml-2 bg-red-800 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1.5 rounded transition shadow" title="Lock session">
+                        <i class="fa-solid fa-lock"></i> Lock Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-6 sm:space-x-8">
+            <button onclick="switchTab('directory')" id="tab-directory" class="py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition border-bcpdNavy text-bcpdNavy">
+                <i class="fa-solid fa-address-book"></i> Member Directory
+            </button>
+            <button onclick="switchTab('muster')" id="tab-muster" class="py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition border-transparent text-gray-500 hover:text-gray-700">
+                <i class="fa-solid fa-clipboard-user"></i> Muster Check-In
+            </button>
+            <button onclick="switchTab('access')" id="tab-access" class="py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition border-transparent text-gray-500 hover:text-gray-700">
+                <i class="fa-solid fa-shield-halved"></i> Access Control <span id="accessTabBadge" class="ml-1 bg-red-100 text-red-800 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Admin</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
+
+        <!-- ================= TAB 1: MEMBER DIRECTORY ================= -->
+        <div id="view-directory" class="space-y-6">
+            
+            <!-- Controls Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border">
+                <div class="relative flex-grow max-w-md">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchMember" oninput="renderDirectory()" placeholder="Search by name, instrument, or medical condition..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-bcpdNavy text-sm">
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="filterInstrument" onchange="renderDirectory()" class="border px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-bcpdNavy">
+                        <option value="">All Sections / Instruments</option>
+                        <option value="Pipes">Pipes</option>
+                        <option value="Snare">Snare Drum</option>
+                        <option value="Bass/Tenor">Bass & Tenor Drum</option>
+                        <option value="Drum Major">Drum Major</option>
+                    </select>
+                    <button onclick="openAddMemberModal()" id="addMemberBtn" class="bg-bcpdNavy hover:bg-bcpdLightNavy text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition shadow-sm hidden">
+                        <i class="fa-solid fa-user-plus"></i> Add Member
+                    </button>
+                </div>
+            </div>
+
+            <!-- Authorised Viewing Notice -->
+            <div id="accessNoticeBox" class="bg-amber-50 border-l-4 border-bcpdGold p-4 rounded-r-xl shadow-sm flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-lg"></i>
+                <div>
+                    <h4 id="accessNoticeTitle" class="text-sm font-bold text-amber-900">Authorised Personnel Medical Access Active</h4>
+                    <p id="accessNoticeDesc" class="text-xs text-amber-700 mt-0.5">You are currently authorised to view full medical histories, allergies, and Next of Kin contact numbers in compliance with band welfare protocols.</p>
+                </div>
+            </div>
+
+            <!-- Member Cards Grid -->
+            <div id="memberGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: MUSTER CHECK-IN ================= -->
+        <div id="view-muster" class="space-y-6 hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b">
+                    <div>
+                        <h2 class="text-xl font-bold text-bcpdNavy">Band Practice & Event Muster Roll (Sorted Alphabetically by Surname)</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Mark attendance for today's practice at Baston Village Hall. Quick access to medical profiles for present members.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="musterStats" class="text-xs font-semibold bg-blue-50 text-bcpdNavy px-3 py-1.5 rounded-lg border border-blue-200">0 / 0 Checked In</span>
+                        <button onclick="resetMuster()" class="text-xs text-gray-600 hover:text-red-600 underline">Reset Roll</button>
+                    </div>
+                </div>
+
+                <div id="musterList" class="space-y-3">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: ACCESS CONTROL ================= -->
+        <div id="view-access" class="space-y-6 hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                    <div>
+                        <h2 class="text-xl font-bold text-bcpdNavy">Authorised Viewers Management</h2>
+                        <p class="text-xs text-gray-500">Configure which band members are authorised to view confidential medical notes and emergency next-of-kin records.</p>
+                    </div>
+                    <div id="adminOnlyBadge" class="bg-red-50 text-red-700 border border-red-200 text-xs px-3 py-1 rounded-lg font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock"></i> Restricted to Admin (Gary Sansby)
+                    </div>
+                </div>
+
+                <div id="accessControlWarning" class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm mb-4">
+                    <i class="fa-solid fa-ban mr-1"></i> <strong>Access Denied:</strong> Only the designated Administrator (Gary Sansby - members@bcpd.org.uk) can modify viewing authorisations and edit member records. You can view the list below in read-only mode.
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Member Name (Surname Sorted)</th>
+                                <th class="px-4 py-3 text-left">Instrument / Role</th>
+                                <th class="px-4 py-3 text-left">System Role</th>
+                                <th class="px-4 py-3 text-center">Medical & NOK Access Authorised</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accessTableBody" class="divide-y divide-gray-200 bg-white">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-bcpdNavy text-gray-400 py-4 text-center text-xs border-t border-gray-800 mt-auto">
+        <p>&copy; 2026 Bomber County Pipes & Drums. GDPR Article 9 Compliant Secure Medical Database &bull; Password Protected & Saved Locally.</p>
+    </footer>
+
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- View Full Details Modal -->
+    <div id="memberDetailModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start pb-4 border-b">
+                <div class="flex items-center gap-3">
+                    <div id="detailAvatar" class="w-12 h-12 rounded-full bg-bcpdNavy text-bcpdGold font-bold flex items-center justify-center text-lg">GS</div>
+                    <div>
+                        <h3 id="detailName" class="text-xl font-bold text-bcpdNavy">Member Name</h3>
+                        <p id="detailInstrument" class="text-xs text-gray-500 font-medium">Instrument / Role</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('memberDetailModal')" class="text-gray-400 hover:text-gray-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Medical Information Box -->
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+                    <h4 class="text-sm font-bold text-red-900 flex items-center gap-2 border-b border-red-200 pb-2">
+                        <i class="fa-solid fa-suitcase-medical"></i> Medical & Allergy Data
+                    </h4>
+                    <div>
+                        <p class="text-[11px] font-bold text-red-800 uppercase">Known Conditions & Allergies</p>
+                        <p id="detailMedical" class="text-sm text-red-950 font-medium mt-0.5">None recorded</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-red-800 uppercase">Medication / Notes</p>
+                        <p id="detailMedication" class="text-xs text-red-900 mt-0.5">None</p>
+                    </div>
+                </div>
+
+                <!-- Next of Kin Box -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+                    <h4 class="text-sm font-bold text-bcpdNavy flex items-center gap-2 border-b border-blue-200 pb-2">
+                        <i class="fa-solid fa-phone-volume"></i> Next of Kin Contact
+                    </h4>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 uppercase">Contact Name & Relationship</p>
+                        <p id="detailNokName" class="text-sm font-bold text-bcpdNavy mt-0.5">Name (Relationship)</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 uppercase">Phone Number</p>
+                        <a id="detailNokPhoneLink" href="tel:#" class="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1.5 mt-0.5">
+                            <i class="fa-solid fa-phone"></i> <span id="detailNokPhone">00000 000000</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl text-xs text-gray-600 space-y-1">
+                <p><strong>Address:</strong> <span id="detailAddress">Not provided</span></p>
+                <p><strong>GP Surgery:</strong> <span id="detailGp">Not provided</span></p>
+            </div>
+
+            <div class="pt-2 border-t flex justify-end gap-3">
+                <button onclick="openEditMemberModalFromDetail()" id="detailEditBtn" class="bg-bcpdNavy hover:bg-bcpdLightNavy text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Profile (Admin)
+                </button>
+                <button onclick="closeModal('memberDetailModal')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Member Modal -->
+    <div id="memberModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 id="memberModalTitle" class="text-lg font-bold text-bcpdNavy">Add New Band Member</h3>
+                <button onclick="closeModal('memberModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="memberForm" onsubmit="saveMember(event)" class="space-y-4 text-sm">
+                <input type="hidden" id="editMemberId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name * (First Surname)</label>
+                        <input type="text" id="formName" required placeholder="e.g. Gary Sansby" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Instrument / Role *</label>
+                        <select id="formInstrument" required class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy bg-white">
+                            <option value="Pipes">Pipes (Piper)</option>
+                            <option value="Snare">Snare Drum</option>
+                            <option value="Bass/Tenor">Bass & Tenor Drum</option>
+                            <option value="Drum Major">Drum Major</option>
+                            <option value="Committee">Committee / Non-Playing</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Address</label>
+                        <input type="email" id="formEmail" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Phone Number</label>
+                        <input type="text" id="formPhone" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Home Address</label>
+                    <input type="text" id="formAddress" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy">
+                </div>
+
+                <div class="border-t pt-3 space-y-3">
+                    <h4 class="text-xs font-bold text-red-800 uppercase tracking-wider"><i class="fa-solid fa-suitcase-medical mr-1"></i> Confidential Medical Details</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Medical Conditions / Allergies</label>
+                            <textarea id="formMedical" rows="2" placeholder="e.g. Asthma, Penicillin allergy" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Regular Medication & Notes</label>
+                            <textarea id="formMedication" rows="2" placeholder="e.g. Inhaler carried in sporran" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs"></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">GP Surgery Name & Phone</label>
+                        <input type="text" id="formGp" placeholder="e.g. Baston Surgery - 01778 000000" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs">
+                    </div>
+                </div>
+
+                <div class="border-t pt-3 space-y-3">
+                    <h4 class="text-xs font-bold text-bcpdNavy uppercase tracking-wider"><i class="fa-solid fa-phone-volume mr-1"></i> Next of Kin (Emergency Contact)</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contact Name</label>
+                            <input type="text" id="formNokName" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Relationship</label>
+                            <input type="text" id="formNokRelation" placeholder="e.g. Spouse, Parent" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="text" id="formNokPhone" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('memberModal')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">Cancel</button>
+                    <button type="submit" class="bg-bcpdNavy hover:bg-bcpdLightNavy text-white px-5 py-2 rounded-lg text-xs font-semibold shadow">Save Member Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
+    <script>
+        // Initial Band Members Database with Gary Sansby configured as Admin
+        const defaultMembers = [
+            {
+                id: 1,
+                name: "Gary Sansby",
+                instrument: "Drum Major",
+                email: "members@bcpd.org.uk",
+                phone: "07700 900123",
+                address: "42 High Street, Baston, PE6 9PA",
+                medical: "Mild Asthma",
+                medication: "Salbutamol Inhaler carried in pocket",
+                gp: "Baston Surgery - 01778 560123",
+                nokName: "Sarah Sansby",
+                nokRelation: "Spouse",
+                nokPhone: "07700 900124",
+                authorisedViewer: true,
+                systemRole: "Admin",
+                present: true
+            },
+            {
+                id: 2,
+                name: "Paul Pearson",
+                instrument: "Pipes",
+                email: "chairman@bcpd.org.uk",
+                phone: "07700 900234",
+                address: "15 Main Street, Market Deeping",
+                medical: "None reported",
+                medication: "None",
+                gp: "Deepings Practice - 01778 342345",
+                nokName: "Linda Pearson",
+                nokRelation: "Spouse",
+                nokPhone: "07700 900235",
+                authorisedViewer: true,
+                systemRole: "Viewer",
+                present: true
+            },
+            {
+                id: 3,
+                name: "Cameron Brownlie",
+                instrument: "Pipes",
+                email: "pipemajor@bcpd.org.uk",
+                phone: "07700 900345",
+                address: "8 Station Road, Spalding",
+                medical: "Severe Penicillin Allergy",
+                medication: "Carries EpiPen",
+                gp: "Church Lane Surgery - 01775 722111",
+                nokName: "Fiona Brownlie",
+                nokRelation: "Spouse",
+                nokPhone: "07700 900346",
+                authorisedViewer: true,
+                systemRole: "Viewer",
+                present: false
+            },
+            {
+                id: 4,
+                name: "Georgia Sansby",
+                instrument: "Snare",
+                email: "georgia@bcpd.org.uk",
+                phone: "07700 900456",
+                address: "42 High Street, Baston",
+                medical: "Type 1 Diabetes",
+                medication: "Insulin pump attached",
+                gp: "Baston Surgery - 01778 560123",
+                nokName: "Gary Sansby",
+                nokRelation: "Father",
+                nokPhone: "07700 900123",
+                authorisedViewer: false,
+                systemRole: "Member",
+                present: true
+            },
+            {
+                id: 5,
+                name: "Pete Bass",
+                instrument: "Bass/Tenor",
+                email: "pete.bass@bcpd.org.uk",
+                phone: "07700 900567",
+                address: "12 Fen Road, Bourne",
+                medical: "Hypertension",
+                medication: "Blood pressure tablets daily",
+                gp: "Bourne Westfield Surgery - 01778 422000",
+                nokName: "Susan",
+                nokRelation: "Partner",
+                nokPhone: "07700 900568",
+                authorisedViewer: false,
+                systemRole: "Member",
+                present: true
+            },
+            {
+                id: 6,
+                name: "Adam Smith",
+                instrument: "Bass/Tenor",
+                email: "adam@bcpd.org.uk",
+                phone: "07700 900678",
+                address: "22 Church Street, Stamford",
+                medical: "None reported",
+                medication: "None",
+                gp: "Stamford Medical Centre - 01780 762012",
+                nokName: "Claire",
+                nokRelation: "Spouse",
+                nokPhone: "07700 900679",
+                authorisedViewer: false,
+                systemRole: "Member",
+                present: false
+            },
+            {
+                id: 7,
+                name: "Florence Green",
+                instrument: "Pipes",
+                email: "florence@bcpd.org.uk",
+                phone: "07700 900789",
+                address: "5 Meadow Lane, Baston",
+                medical: "Nut Allergy",
+                medication: "Antihistamine in case",
+                gp: "Baston Surgery - 01778 560123",
+                nokName: "David",
+                nokRelation: "Parent",
+                nokPhone: "07700 900790",
+                authorisedViewer: false,
+                systemRole: "Member",
+                present: true
+            }
+        ];
+
+        // Load members from localStorage or fallback to defaults
+        let members = [];
+        try {
+            const savedMembers = localStorage.getItem('bcpd_secure_members_v1');
+            if (savedMembers) {
+                members = JSON.parse(savedMembers);
+            } else {
+                members = defaultMembers;
+            }
+        } catch (e) {
+            members = defaultMembers;
+        }
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('bcpd_secure_members_v1', JSON.stringify(members));
+            } catch (e) {
+                console.error("Could not save to localStorage", e);
+            }
+        }
+
+        // Current active logged-in user simulation (Default: Gary Sansby - Admin)
+        let currentUserId = 1;
+
+        // Robust Surname Extractor for Alphabetical Sorting
+        function getSurname(fullName) {
+            if (!fullName) return "";
+            const cleanName = fullName.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+            const parts = cleanName.split(/\s+/);
+            if (parts.length === 0) return "";
+            return parts[parts.length - 1].toLowerCase();
+        }
+
+        // Initialize login screen user select on load
+        window.onload = function() {
+            populateLoginSelect();
+        };
+
+        function populateLoginSelect() {
+            let sortedMembers = [...members].sort((a, b) => getSurname(a.name).localeCompare(getSurname(b.name)));
+            const select = document.getElementById('loginUserSelect');
+            select.innerHTML = '';
+            sortedMembers.forEach(m => {
+                let roleLabel = m.systemRole === 'Admin' ? 'Admin (Gary)' : (m.authorisedViewer ? 'Authorised Viewer' : 'Member');
+                select.innerHTML += `<option value="${m.id}">${m.name} — ${m.instrument} (${roleLabel})</option>`;
+            });
+            select.value = "1"; // Default to Gary Sansby
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const selectedId = parseInt(document.getElementById('loginUserSelect').value);
+            const pin = document.getElementById('loginPin').value;
+
+            // Band security password required for GDPR compliance
+            if (pin !== "BCPD2026!") {
+                alert("Incorrect Password. Please enter the secure band password: BCPD2026!");
+                return;
+            }
+
+            currentUserId = selectedId;
+            document.getElementById('loginScreen').classList.add('hidden');
+            renderAll();
+        }
+
+        function logout() {
+            document.getElementById('loginPin').value = "";
+            populateLoginSelect();
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function renderAll() {
+            // Sort members array in-place alphabetically by Surname
+            members.sort((a, b) => {
+                const surnameA = getSurname(a.name);
+                const surnameB = getSurname(b.name);
+                return surnameA.localeCompare(surnameB);
+            });
+
+            saveToLocalStorage();
+            updateUserHeader();
+            renderDirectory();
+            renderMuster();
+            renderAccessControl();
+        }
+
+        function setCurrentUser(id) {
+            currentUserId = id;
+            closeModal('switchUserModal');
+            renderAll();
+        }
+
+        function updateUserHeader() {
+            const user = members.find(m => m.id === currentUserId) || members[0];
+            const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            
+            document.getElementById('currentUserAvatar').innerText = initials;
+            document.getElementById('currentUserName').innerText = user.name;
+            
+            let roleText = "Member";
+            if (user.systemRole === 'Admin') roleText = "Administrator";
+            else if (user.authorisedViewer) roleText = "Authorised Viewer";
+
+            document.getElementById('currentUserRoleBadge').innerText = roleText;
+
+            const addBtn = document.getElementById('addMemberBtn');
+            if (user.systemRole === 'Admin') {
+                addBtn.classList.remove('hidden');
+            } else {
+                addBtn.classList.add('hidden');
+            }
+
+            const noticeBox = document.getElementById('accessNoticeBox');
+            const noticeTitle = document.getElementById('accessNoticeTitle');
+            const noticeDesc = document.getElementById('accessNoticeDesc');
+
+            if (user.systemRole === 'Admin' || user.authorisedViewer) {
+                noticeBox.className = "bg-amber-50 border-l-4 border-bcpdGold p-4 rounded-r-xl shadow-sm flex items-start gap-3";
+                noticeTitle.className = "text-sm font-bold text-amber-900";
+                noticeTitle.innerHTML = `<i class="fa-solid fa-shield-check mr-1"></i> GDPR Authorised Medical Access Active (${user.name})`;
+                noticeDesc.className = "text-xs text-amber-700 mt-0.5";
+                noticeDesc.innerText = user.systemRole === 'Admin' 
+                    ? "You are logged in as Admin (Gary Sansby) with full GDPR permissions to manage medical records and view access." 
+                    : "You are authorised under band welfare protocols to view confidential medical notes and emergency contact numbers.";
+            } else {
+                noticeBox.className = "bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm flex items-start gap-3";
+                noticeTitle.className = "text-sm font-bold text-blue-900";
+                noticeTitle.innerHTML = `<i class="fa-solid fa-eye-slash mr-1"></i> Standard Member View (${user.name})`;
+                noticeDesc.className = "text-xs text-blue-700 mt-0.5";
+                noticeDesc.innerText = "Medical details and Next of Kin records are restricted under GDPR Article 9. Only designated Authorised Viewers and Admins can access full confidential data.";
+            }
+        }
+
+        function switchTab(tabName) {
+            ['directory', 'muster', 'access'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition border-transparent text-gray-500 hover:text-gray-700";
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = "py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition border-bcpdNavy text-bcpdNavy";
+        }
+
+        function renderDirectory() {
+            const currentUser = members.find(m => m.id === currentUserId);
+            const canViewAll = currentUser.systemRole === 'Admin' || currentUser.authorisedViewer;
+            const isAdmin = currentUser.systemRole === 'Admin';
+
+            const searchQuery = document.getElementById('searchMember').value.toLowerCase();
+            const filterInst = document.getElementById('filterInstrument').value;
+            const grid = document.getElementById('memberGrid');
+            grid.innerHTML = '';
+
+            const filtered = members.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(searchQuery) || 
+                                      m.instrument.toLowerCase().includes(searchQuery) || 
+                                      m.medical.toLowerCase().includes(searchQuery);
+                const matchesInst = filterInst === '' || m.instrument === filterInst;
+                return matchesSearch && matchesInst;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border">No members found matching your search.</div>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                
+                let cardHTML = `
+                    <div class="bg-white rounded-xl shadow-sm border hover:shadow-md transition flex flex-col overflow-hidden">
+                        <div class="p-5 flex items-start gap-4 border-b bg-gray-50/50">
+                            <div class="w-12 h-12 rounded-full bg-bcpdNavy text-bcpdGold font-bold flex items-center justify-center text-base shrink-0 shadow-inner">${initials}</div>
+                            <div class="flex-grow min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-bold text-bcpdNavy text-base truncate">${m.name}</h3>
+                                    <span class="text-[10px] font-semibold bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">${m.instrument}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-phone mr-1"></i> ${m.phone || 'No phone'}</p>
+                                <p class="text-xs text-gray-500 truncate"><i class="fa-solid fa-envelope mr-1"></i> ${m.email || 'No email'}</p>
+                            </div>
+                        </div>
+
+                        <div class="p-5 flex-grow space-y-3 text-xs">
+                `;
+
+                if (canViewAll) {
+                    cardHTML += `
+                        <div class="bg-red-50 border border-red-100 p-2.5 rounded-lg">
+                            <p class="font-bold text-red-900 flex items-center gap-1 mb-0.5">
+                                <i class="fa-solid fa-suitcase-medical"></i> Medical (GDPR Confidential):
+                            </p>
+                            <p class="text-red-950">${m.medical}</p>
+                            <p class="text-[11px] text-red-800 mt-1 italic">${m.medication}</p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-lg">
+                            <p class="font-bold text-bcpdNavy flex items-center gap-1 mb-0.5">
+                                <i class="fa-solid fa-phone-volume"></i> Next of Kin (${m.nokName || 'None'}):
+                            </p>
+                            <a href="tel:${m.nokPhone}" class="font-semibold text-blue-600 hover:underline flex items-center gap-1 mt-0.5">
+                                <i class="fa-solid fa-phone"></i> ${m.nokPhone || 'N/A'} (${m.nokRelation || 'Relation'})
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    cardHTML += `
+                        <div class="bg-gray-50 border border-gray-200 p-4 rounded-lg text-center text-gray-500 space-y-2">
+                            <i class="fa-solid fa-lock text-gray-400 text-lg"></i>
+                            <p class="font-medium text-xs">Medical & NOK Details Restricted</p>
+                            <p class="text-[11px] text-gray-400">GDPR Protected Data. Authorisation required to inspect records.</p>
+                        </div>
+                    `;
+                }
+
+                cardHTML += `
+                        </div>
+                        <div class="px-5 py-3 bg-gray-50 border-t flex items-center justify-between">
+                            <button onclick="openDetailModal(${m.id})" class="text-bcpdNavy hover:text-bcpdLightNavy font-semibold text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-id-card"></i> View Full Profile
+                            </button>
+                            ${isAdmin ? `
+                                <button onclick="openEditMemberModal(${m.id})" class="text-bcpdNavy hover:text-bcpdLightNavy font-semibold text-xs flex items-center gap-1 bg-amber-100 px-2.5 py-1 rounded">
+                                    <i class="fa-solid fa-pen"></i> Edit Record
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        function renderMuster() {
+            const currentUser = members.find(m => m.id === currentUserId);
+            const canViewAll = currentUser.systemRole === 'Admin' || currentUser.authorisedViewer;
+            
+            const list = document.getElementById('musterList');
+            list.innerHTML = '';
+
+            let presentCount = 0;
+            members.forEach(m => {
+                if (m.present) presentCount++;
+
+                list.innerHTML += `
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl border ${m.present ? 'bg-emerald-50/50 border-emerald-200' : 'bg-gray-50 border-gray-200'} gap-3">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${m.present ? 'checked' : ''} onchange="toggleMuster(${m.id})" class="w-5 h-5 text-bcpdNavy rounded focus:ring-bcpdNavy cursor-pointer">
+                            <div>
+                                <h4 class="font-bold text-bcpdNavy text-sm">${m.name}</h4>
+                                <p class="text-xs text-gray-500">${m.instrument} &bull; Medical: <span class="font-medium ${m.medical.includes('None') ? 'text-gray-600' : 'text-red-700'}">${m.medical}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                            ${canViewAll && !m.medical.includes('None') ? `
+                                <span class="bg-red-100 text-red-800 text-[10px] px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> ${m.medical}
+                                </span>
+                            ` : ''}
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${m.present ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'}">
+                                ${m.present ? 'Present' : 'Absent'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('musterStats').innerText = `${presentCount} / ${members.length} Checked In`;
+        }
+
+        function toggleMuster(id) {
+            const m = members.find(item => item.id === id);
+            if (m) {
+                m.present = !m.present;
+                renderAll();
+            }
+        }
+
+        function resetMuster() {
+            members.forEach(m => m.present = false);
+            renderAll();
+        }
+
+        function renderAccessControl() {
+            const currentUser = members.find(m => m.id === currentUserId);
+            const isAdmin = currentUser.systemRole === 'Admin';
+
+            const warningBox = document.getElementById('accessControlWarning');
+            const badge = document.getElementById('adminOnlyBadge');
+            
+            if (isAdmin) {
+                warningBox.classList.add('hidden');
+                badge.className = "bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-3 py-1 rounded-lg font-bold flex items-center gap-1.5";
+                badge.innerHTML = `<i class="fa-solid fa-shield-check"></i> Admin Access Verified (Gary Sansby)`;
+            } else {
+                warningBox.classList.remove('hidden');
+                badge.className = "bg-red-50 text-red-700 border border-red-200 text-xs px-3 py-1 rounded-lg font-bold flex items-center gap-1.5";
+                badge.innerHTML = `<i class="fa-solid fa-lock"></i> Restricted to Admin`;
+            }
+
+            const tbody = document.getElementById('accessTableBody');
+            tbody.innerHTML = '';
+
+            members.forEach(m => {
+                let roleBadge = `<span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-semibold">Member</span>`;
+                if (m.systemRole === 'Admin') roleBadge = `<span class="bg-bcpdNavy text-white px-2 py-0.5 rounded text-[10px] font-bold">Admin</span>`;
+                else if (m.systemRole === 'Viewer') roleBadge = `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded text-[10px] font-bold">Authorised Viewer</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-3 font-medium text-bcpdNavy">${m.name}</td>
+                        <td class="px-4 py-3 text-gray-600">${m.instrument}</td>
+                        <td class="px-4 py-3">${roleBadge}</td>
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" ${m.authorisedViewer ? 'checked' : ''} ${isAdmin && m.id !== 1 ? `onchange="toggleAuthorisation(${m.id})"` : 'disabled'} class="w-4 h-4 text-bcpdNavy rounded focus:ring-bcpdNavy ${isAdmin && m.id !== 1 ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}">
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            ${isAdmin ? `
+                                <div class="flex items-center justify-end gap-2">
+                                    ${m.id !== 1 ? `<button onclick="toggleAuthorisation(${m.id})" class="text-xs text-bcpdNavy hover:underline font-semibold">Toggle Access</button>` : ''}
+                                    <button onclick="openEditMemberModal(${m.id})" class="text-xs bg-bcpdNavy text-white px-2 py-1 rounded font-semibold hover:bg-bcpdLightNavy">Edit</button>
+                                </div>
+                            ` : `<span class="text-xs text-gray-400 italic">Locked</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleAuthorisation(id) {
+            const currentUser = members.find(m => m.id === currentUserId);
+            if (currentUser.systemRole !== 'Admin') {
+                alert('Only Gary Sansby (Admin) can modify viewer authorisations.');
+                return;
+            }
+            const m = members.find(item => item.id === id);
+            if (m && m.id !== 1) {
+                m.authorisedViewer = !m.authorisedViewer;
+                m.systemRole = m.authorisedViewer ? 'Viewer' : 'Member';
+                renderAll();
+            }
+        }
+
+        let activeDetailId = null;
+
+        function openDetailModal(id) {
+            activeDetailId = id;
+            const m = members.find(item => item.id === id);
+            if (!m) return;
+
+            const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('detailAvatar').innerText = initials;
+            document.getElementById('detailName').innerText = m.name;
+            document.getElementById('detailInstrument').innerText = `${m.instrument} &bull; Email: ${m.email || 'N/A'} &bull; Phone: ${m.phone || 'N/A'}`;
+            
+            document.getElementById('detailMedical').innerText = m.medical;
+            document.getElementById('detailMedication').innerText = m.medication;
+            document.getElementById('detailGp').innerText = m.gp;
+
+            document.getElementById('detailNokName').innerText = `${m.nokName} (${m.nokRelation})`;
+            document.getElementById('detailNokPhone').innerText = m.nokPhone;
+            document.getElementById('detailNokPhoneLink').href = `tel:${m.nokPhone}`;
+            document.getElementById('detailAddress').innerText = m.address || 'Not provided';
+
+            const currentUser = members.find(u => u.id === currentUserId);
+            const editBtn = document.getElementById('detailEditBtn');
+            if (currentUser.systemRole === 'Admin') {
+                editBtn.classList.remove('hidden');
+            } else {
+                editBtn.classList.add('hidden');
+            }
+
+            openModal('memberDetailModal');
+        }
+
+        function openEditMemberModalFromDetail() {
+            closeModal('memberDetailModal');
+            openEditMemberModal(activeDetailId);
+        }
+
+        function openAddMemberModal() {
+            const currentUser = members.find(u => u.id === currentUserId);
+            if (currentUser.systemRole !== 'Admin') {
+                alert('Access Denied: Only Gary Sansby (Admin) can add or edit member records.');
+                return;
+            }
+            document.getElementById('memberModalTitle').innerText = "Add New Band Member";
+            document.getElementById('editMemberId').value = "";
+            document.getElementById('memberForm').reset();
+            openModal('memberModal');
+        }
+
+        function openEditMemberModal(id) {
+            const currentUser = members.find(u => u.id === currentUserId);
+            if (currentUser.systemRole !== 'Admin') {
+                alert('Access Denied: Only Gary Sansby (Admin) can edit member records.');
+                return;
+            }
+
+            const m = members.find(item => item.id === id);
+            if (!m) return;
+
+            document.getElementById('memberModalTitle').innerText = `Edit Profile: ${m.name}`;
+            document.getElementById('editMemberId').value = m.id;
+            document.getElementById('formName').value = m.name;
+            document.getElementById('formInstrument').value = m.instrument;
+            document.getElementById('formEmail').value = m.email;
+            document.getElementById('formPhone').value = m.phone;
+            document.getElementById('formAddress').value = m.address;
+            document.getElementById('formMedical').value = m.medical;
+            document.getElementById('formMedication').value = m.medication;
+            document.getElementById('formGp').value = m.gp;
+            document.getElementById('formNokName').value = m.nokName;
+            document.getElementById('formNokRelation').value = m.nokRelation;
+            document.getElementById('formNokPhone').value = m.nokPhone;
+
+            openModal('memberModal');
+        }
+
+        function saveMember(event) {
+            event.preventDefault();
+            const editId = document.getElementById('editMemberId').value;
+
+            const memberData = {
+                name: document.getElementById('formName').value,
+                instrument: document.getElementById('formInstrument').value,
+                email: document.getElementById('formEmail').value,
+                phone: document.getElementById('formPhone').value,
+                address: document.getElementById('formAddress').value,
+                medical: document.getElementById('formMedical').value || "None reported",
+                medication: document.getElementById('formMedication').value || "None",
+                gp: document.getElementById('formGp').value || "Not provided",
+                nokName: document.getElementById('formNokName').value || "Not provided",
+                nokRelation: document.getElementById('formNokRelation').value || "Not provided",
+                nokPhone: document.getElementById('formNokPhone').value || "Not provided"
+            };
+
+            if (editId) {
+                const m = members.find(item => item.id == editId);
+                if (m) {
+                    Object.assign(m, memberData);
+                }
+            } else {
+                const newId = members.length > 0 ? Math.max(...members.map(m => m.id)) + 1 : 1;
+                members.push({
+                    id: newId,
+                    ...memberData,
+                    authorisedViewer: false,
+                    systemRole: 'Member',
+                    present: true
+                });
+            }
+
+            closeModal('memberModal');
+            renderAll();
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('flex');
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        function downloadAppCode() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BCPD_GDPR_Saved_Medical_Portal.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
