@@ -52,8 +52,8 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Band Security Password / PIN</label>
-                    <input type="password" id="loginPin" required placeholder="Enter Band Password (default: BCPD2026!)" class="w-full border px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-bcpdNavy">
-                    <p class="text-[10px] text-gray-400 mt-1">Default security password for testing: <strong class="text-gray-600">BCPD2026!</strong></p>
+                    <input type="password" id="loginPin" required placeholder="Enter Band Password" class="w-full border px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-bcpdNavy">
+                    
                 </div>
 
                 <button type="submit" class="w-full bg-bcpdNavy hover:bg-bcpdLightNavy text-white font-bold py-3 rounded-lg text-sm transition shadow flex items-center justify-center gap-2">
@@ -283,15 +283,21 @@
             </div>
 
             <div class="bg-gray-50 p-4 rounded-xl text-xs text-gray-600 space-y-1">
+                <p><strong>Date of Birth:</strong> <span id="detailDob">Not provided</span></p>
                 <p><strong>Address:</strong> <span id="detailAddress">Not provided</span></p>
                 <p><strong>GP Surgery:</strong> <span id="detailGp">Not provided</span></p>
             </div>
 
-            <div class="pt-2 border-t flex justify-end gap-3">
-                <button onclick="openEditMemberModalFromDetail()" id="detailEditBtn" class="bg-bcpdNavy hover:bg-bcpdLightNavy text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit Profile (Admin)
+            <div class="pt-2 border-t flex items-center justify-between">
+                <button onclick="deleteActiveMember()" id="detailDeleteBtn" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 hidden">
+                    <i class="fa-solid fa-trash-can"></i> Delete Profile
                 </button>
-                <button onclick="closeModal('memberDetailModal')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">Close</button>
+                <div class="flex items-center gap-3 ml-auto">
+                    <button onclick="openEditMemberModalFromDetail()" id="detailEditBtn" class="bg-bcpdNavy hover:bg-bcpdLightNavy text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Profile (Admin)
+                    </button>
+                    <button onclick="closeModal('memberDetailModal')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -338,6 +344,18 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Home Address</label>
                     <input type="text" id="formAddress" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Date of Birth</label>
+                    <input type="date" id="formDob" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Profile Photograph</label>
+                    <input type="file" id="formImageFile" accept="image/*" onchange="previewImage(event)" class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-bcpdNavy text-sm bg-white file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-bcpdNavy file:text-white hover:file:bg-bcpdLightNavy cursor-pointer">
+                    <input type="hidden" id="formImage">
+                    <div id="imagePreviewContainer" class="mt-2 hidden">
+                        <img id="imagePreview" src="" alt="Preview" class="w-16 h-16 rounded-full object-cover border-2 border-bcpdGold shadow">
+                    </div>
                 </div>
 
                 <div class="border-t pt-3 space-y-3">
@@ -396,12 +414,14 @@
                 email: "members@bcpd.org.uk",
                 phone: "07700 900123",
                 address: "42 High Street, Baston, PE6 9PA",
+                dob: "1975-06-14",
                 medical: "Mild Asthma",
                 medication: "Salbutamol Inhaler carried in pocket",
                 gp: "Baston Surgery - 01778 560123",
                 nokName: "Sarah Sansby",
                 nokRelation: "Spouse",
                 nokPhone: "07700 900124",
+                image: "",
                 authorisedViewer: true,
                 systemRole: "Admin",
                 present: true
@@ -413,12 +433,14 @@
                 email: "chairman@bcpd.org.uk",
                 phone: "07700 900234",
                 address: "15 Main Street, Market Deeping",
+                dob: "1968-03-22",
                 medical: "None reported",
                 medication: "None",
                 gp: "Deepings Practice - 01778 342345",
                 nokName: "Linda Pearson",
                 nokRelation: "Spouse",
                 nokPhone: "07700 900235",
+                image: "",
                 authorisedViewer: true,
                 systemRole: "Viewer",
                 present: true
@@ -430,12 +452,14 @@
                 email: "pipemajor@bcpd.org.uk",
                 phone: "07700 900345",
                 address: "8 Station Road, Spalding",
+                dob: "1982-11-05",
                 medical: "Severe Penicillin Allergy",
                 medication: "Carries EpiPen",
                 gp: "Church Lane Surgery - 01775 722111",
                 nokName: "Fiona Brownlie",
                 nokRelation: "Spouse",
                 nokPhone: "07700 900346",
+                image: "",
                 authorisedViewer: true,
                 systemRole: "Viewer",
                 present: false
@@ -447,12 +471,14 @@
                 email: "georgia@bcpd.org.uk",
                 phone: "07700 900456",
                 address: "42 High Street, Baston",
+                dob: "2011-09-10",
                 medical: "Type 1 Diabetes",
                 medication: "Insulin pump attached",
                 gp: "Baston Surgery - 01778 560123",
                 nokName: "Gary Sansby",
                 nokRelation: "Father",
                 nokPhone: "07700 900123",
+                image: "",
                 authorisedViewer: false,
                 systemRole: "Member",
                 present: true
@@ -464,12 +490,14 @@
                 email: "pete.bass@bcpd.org.uk",
                 phone: "07700 900567",
                 address: "12 Fen Road, Bourne",
+                dob: "1970-04-18",
                 medical: "Hypertension",
                 medication: "Blood pressure tablets daily",
                 gp: "Bourne Westfield Surgery - 01778 422000",
                 nokName: "Susan",
                 nokRelation: "Partner",
                 nokPhone: "07700 900568",
+                image: "",
                 authorisedViewer: false,
                 systemRole: "Member",
                 present: true
@@ -481,12 +509,14 @@
                 email: "adam@bcpd.org.uk",
                 phone: "07700 900678",
                 address: "22 Church Street, Stamford",
+                dob: "1985-12-03",
                 medical: "None reported",
                 medication: "None",
                 gp: "Stamford Medical Centre - 01780 762012",
                 nokName: "Claire",
                 nokRelation: "Spouse",
                 nokPhone: "07700 900679",
+                image: "",
                 authorisedViewer: false,
                 systemRole: "Member",
                 present: false
@@ -498,12 +528,14 @@
                 email: "florence@bcpd.org.uk",
                 phone: "07700 900789",
                 address: "5 Meadow Lane, Baston",
+                dob: "1992-07-25",
                 medical: "Nut Allergy",
                 medication: "Antihistamine in case",
                 gp: "Baston Surgery - 01778 560123",
                 nokName: "David",
                 nokRelation: "Parent",
                 nokPhone: "07700 900790",
+                image: "",
                 authorisedViewer: false,
                 systemRole: "Member",
                 present: true
@@ -682,7 +714,7 @@
                 let cardHTML = `
                     <div class="bg-white rounded-xl shadow-sm border hover:shadow-md transition flex flex-col overflow-hidden">
                         <div class="p-5 flex items-start gap-4 border-b bg-gray-50/50">
-                            <div class="w-12 h-12 rounded-full bg-bcpdNavy text-bcpdGold font-bold flex items-center justify-center text-base shrink-0 shadow-inner">${initials}</div>
+                            ${m.image ? `<img src="${m.image}" alt="${m.name}" class="w-12 h-12 rounded-full object-cover border-2 border-bcpdGold shrink-0 shadow-inner">` : `<div class="w-12 h-12 rounded-full bg-bcpdNavy text-bcpdGold font-bold flex items-center justify-center text-base shrink-0 shadow-inner">${initials}</div>`}
                             <div class="flex-grow min-w-0">
                                 <div class="flex items-center justify-between">
                                     <h3 class="font-bold text-bcpdNavy text-base truncate">${m.name}</h3>
@@ -854,13 +886,37 @@
 
         let activeDetailId = null;
 
+        
+        function deleteActiveMember() {
+            if (!activeDetailId) return;
+            if (activeDetailId === 1) {
+                alert("Cannot delete the primary Administrator profile (Gary Sansby).");
+                return;
+            }
+            const memberObj = members.find(m => m.id === activeDetailId);
+            const memberName = memberObj ? memberObj.name : "this member";
+            if (confirm(`Are you sure you want to delete ${memberName}'s profile under GDPR compliance? This action cannot be undone.`)) {
+                members = members.filter(m => m.id !== activeDetailId);
+                closeModal('memberDetailModal');
+                renderAll();
+                alert(`${memberName}'s profile has been securely deleted.`);
+            }
+        }
+
         function openDetailModal(id) {
             activeDetailId = id;
             const m = members.find(item => item.id === id);
             if (!m) return;
 
             const initials = m.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('detailAvatar').innerText = initials;
+            const detailAvatarContainer = document.getElementById('detailAvatar');
+            if (m.image) {
+                detailAvatarContainer.innerHTML = `<img src="${m.image}" alt="${m.name}" class="w-12 h-12 rounded-full object-cover border-2 border-bcpdGold shadow-inner">`;
+                detailAvatarContainer.className = "w-12 h-12 rounded-full shrink-0";
+            } else {
+                detailAvatarContainer.innerText = initials;
+                detailAvatarContainer.className = "w-12 h-12 rounded-full bg-bcpdNavy text-bcpdGold font-bold flex items-center justify-center text-lg shrink-0 shadow-inner";
+            }
             document.getElementById('detailName').innerText = m.name;
             document.getElementById('detailInstrument').innerText = `${m.instrument} &bull; Email: ${m.email || 'N/A'} &bull; Phone: ${m.phone || 'N/A'}`;
             
@@ -872,13 +928,21 @@
             document.getElementById('detailNokPhone').innerText = m.nokPhone;
             document.getElementById('detailNokPhoneLink').href = `tel:${m.nokPhone}`;
             document.getElementById('detailAddress').innerText = m.address || 'Not provided';
+            document.getElementById('detailDob').innerText = m.dob || 'Not provided';
 
             const currentUser = members.find(u => u.id === currentUserId);
             const editBtn = document.getElementById('detailEditBtn');
+            const deleteBtn = document.getElementById('detailDeleteBtn');
             if (currentUser.systemRole === 'Admin') {
                 editBtn.classList.remove('hidden');
+                if (m.id === 1) {
+                    deleteBtn.classList.add('hidden'); // Cannot delete primary Admin
+                } else {
+                    deleteBtn.classList.remove('hidden');
+                }
             } else {
                 editBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
             }
 
             openModal('memberDetailModal');
@@ -898,6 +962,8 @@
             document.getElementById('memberModalTitle').innerText = "Add New Band Member";
             document.getElementById('editMemberId').value = "";
             document.getElementById('memberForm').reset();
+            document.getElementById('formImage').value = "";
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
             openModal('memberModal');
         }
 
@@ -918,6 +984,17 @@
             document.getElementById('formEmail').value = m.email;
             document.getElementById('formPhone').value = m.phone;
             document.getElementById('formAddress').value = m.address;
+            document.getElementById('formDob').value = m.dob || '';
+            document.getElementById('formImage').value = m.image || '';
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            if (m.image) {
+                preview.src = m.image;
+                container.classList.remove('hidden');
+            } else {
+                preview.src = '';
+                container.classList.add('hidden');
+            }
             document.getElementById('formMedical').value = m.medical;
             document.getElementById('formMedication').value = m.medication;
             document.getElementById('formGp').value = m.gp;
@@ -926,6 +1003,22 @@
             document.getElementById('formNokPhone').value = m.nokPhone;
 
             openModal('memberModal');
+        }
+
+        
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64String = e.target.result;
+                    document.getElementById('formImage').value = base64String;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = base64String;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function saveMember(event) {
@@ -938,6 +1031,8 @@
                 email: document.getElementById('formEmail').value,
                 phone: document.getElementById('formPhone').value,
                 address: document.getElementById('formAddress').value,
+                dob: document.getElementById('formDob').value || "",
+                image: document.getElementById('formImage').value || "",
                 medical: document.getElementById('formMedical').value || "None reported",
                 medication: document.getElementById('formMedication').value || "None",
                 gp: document.getElementById('formGp').value || "Not provided",
@@ -956,7 +1051,8 @@
                 members.push({
                     id: newId,
                     ...memberData,
-                    authorisedViewer: false,
+                    image: "",
+                authorisedViewer: false,
                     systemRole: 'Member',
                     present: true
                 });
